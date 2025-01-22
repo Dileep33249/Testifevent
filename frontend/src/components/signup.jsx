@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import {useNavigate} from 'react-router-dom';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +12,7 @@ const Signup = () => {
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const navigate=useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,7 +32,9 @@ const Signup = () => {
         withCredentials:true
       });
       if(response.status){
-        alert(response.data.message)
+        alert(response.data.message);
+        navigate('/login');
+
       }
       console.log(response.data);
       setLoading(false);

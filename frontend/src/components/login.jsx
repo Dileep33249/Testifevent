@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -17,10 +20,13 @@ const Login = () => {
         withCredentials: true,
       });
       if(response.status){
-            alert(response.data.message)
+        setTimeout(() => {
+          alert(response.data.message); 
+        },500);
+          navigate('/dashboard');       
       }
       console.log(response.data);
-
+      
 
     } catch (err) {
       setError(err.response ? err.response.data.message : 'Something went wrong');
@@ -74,11 +80,12 @@ const Login = () => {
               type="submit"
               disabled={loading}
               className="w-full mt-4 p-3 bg-green-500 text-white font-semibold rounded-md hover:bg-green-600 outline-none"
-            >
+            >  
               {loading ? 'Logging in...' : 'Login'}
             </button>
           </div>
         </form>
+
 
         <div className="mt-4 text-center">
           <span className="text-sm text-gray-600">
