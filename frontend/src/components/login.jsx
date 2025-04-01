@@ -1,38 +1,53 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Redirect to dashboard if the user is already logged in
+  useEffect(() => {
+    if (localStorage.getItem("authToken")) {
+      navigate("/dashboard"); // Redirect to dashboard if already logged in
+    }
+  }, [navigate]);
+
   const handleLogin = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevent form submission until checks are done
     setLoading(true);
     setError(null);
 
-    try {
-      const response = await axios.post('http://localhost:4000/userroutes/login', { email, password },{
-        withCredentials: true,
-      });
-      if(response.status){
-        setTimeout(() => {
-          alert(response.data.message); 
-        },500);
-          navigate('/dashboard');       
-      }
-      console.log(response.data);
-      
-
-    } catch (err) {
-      setError(err.response ? err.response.data.message : 'Something went wrong');
-      console.error(err);
-    } finally {
+    // Validate inputs
+    if (!email || !password) {
+      setError("Please fill out both fields.");
       setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/login",
+        { email, password },
+        { withCredentials: true }
+      );
+
+      if (response.status === 200) {
+        // Store the token and user data
+        localStorage.setItem("authToken", response.data.token);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+
+        // Redirect to dashboard after successful login
+        navigate("/dashboard");
+      }
+    } catch (err) {
+      // Handle API errors
+      setError(err.response ? err.response.data.message : "Something went wrong");
+    } finally {
+      setLoading(false); // Reset loading state
     }
   };
 
@@ -48,49 +63,43 @@ const Login = () => {
         )}
 
         <form onSubmit={handleLogin} className="space-y-4">
-          {/* Email Input */}
           <div>
             <input
               type="email"
-              name="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               placeholder="Enter your email"
-              className="w-full mt-2 p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 outline-none"
+              className="w-full mt-2 p-3 border border-gray-300 rounded-md"
             />
           </div>
-
-          {/* Password Input */}
           <div>
             <input
               type="password"
-              name="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               placeholder="Enter your password"
-              className="w-full mt-2 p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 outline-none"
+              className="w-full mt-2 p-3 border border-gray-300 rounded-md"
             />
           </div>
-
-          {/* Submit Button */}
           <div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-4 p-3 bg-green-500 text-white font-semibold rounded-md hover:bg-green-600 outline-none"
-            >  
-              {loading ? 'Logging in...' : 'Login'}
+              className="w-full mt-4 p-3 bg-green-500 text-white font-semibold rounded-md"
+            >
+              {loading ? "Logging in..." : "Login"}
             </button>
           </div>
         </form>
 
-
         <div className="mt-4 text-center">
           <span className="text-sm text-gray-600">
-            Don’t have an account? 
-            <a href="/" className="text-green-500 hover:text-green-700">Sign up</a>
+            Don’t have an account?{" "}
+            <a href="/signup" className="text-green-500 hover:text-green-700">
+              Sign up
+            </a>
           </span>
         </div>
       </div>
